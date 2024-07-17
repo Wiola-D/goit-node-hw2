@@ -78,7 +78,7 @@ const updateFavorite = async (req, res, next) => {
   }
   try {
     const result = await updateStatusContact(id, req.body);
-    res.json(result);
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
