@@ -4,6 +4,7 @@ const {
   insertContact,
   updateContact,
   removeContact,
+  updateStatusContact,
 } = require("./services");
 
 const getAllContacts = async (req, res, next) => {
@@ -69,6 +70,20 @@ const patchContact = async (req, res, next) => {
   }
 };
 
+const updateFavorite = async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!req.body.hasOwnProperty("favorite")) {
+    return res.status(400).json({ message: "missing field favorite" });
+  }
+  try {
+    const result = await updateStatusContact(id, req.body);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const deleteContact = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -84,6 +99,7 @@ module.exports = {
   getContact,
   createContact,
   patchContact,
+  updateFavorite,
   putContact,
   deleteContact,
 };

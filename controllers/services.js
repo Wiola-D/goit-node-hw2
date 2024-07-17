@@ -22,10 +22,25 @@ const updateContact = ({ id, toUpdate, upsert = false }) => {
 
 const removeContact = (id) => Contact.deleteOne({ _id: id });
 
+const updateStatusContact = async (id, update) => {
+  const contact = await Contact.findByIdAndUpdate(
+    { _id: id },
+    { $set: { favorite: update.favorite } },
+    { new: true, runValidators: true, strict: "throw" }
+  );
+
+  if (!contact) {
+    throw new Error("Not found");
+  }
+
+  return contact;
+};
+
 module.exports = {
   fetchContacts,
   fetchContact,
   insertContact,
   updateContact,
   removeContact,
+  updateStatusContact,
 };
