@@ -1,4 +1,4 @@
-const Contact = require("../models/Contacts1");
+const Contact = require("../models/Contacts");
 
 const fetchContacts = () => {
   return Contact.getAll();
