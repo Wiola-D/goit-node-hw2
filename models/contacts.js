@@ -1,19 +1,38 @@
-// const fs = require('fs/promises')
+const mongoose = require("mongoose");
 
-const listContacts = async () => {}
+const contactSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    versionKey: false,
+    timestamps: true,
+  }
+);
 
-const getContactById = async (contactId) => {}
+contactSchema.index({ name: 1 });
 
-const removeContact = async (contactId) => {}
+contactSchema.statics.getAll = function () {
+  return Contact.find().lean();
+};
 
-const addContact = async (body) => {}
+contactSchema.methods.htmlify = function () {
+  return `<h3>Hello</h3>`;
+};
 
-const updateContact = async (contactId, body) => {}
+const Contact = mongoose.model("contact", contactSchema, "contacts");
 
-module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-}
+module.exports = Contact;
