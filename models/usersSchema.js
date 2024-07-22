@@ -34,6 +34,9 @@ userSchema.methods.validatePassword = function (password) {
   return bCrypt.compare(password, this.password);
 };
 
+userSchema.statics.getAll = function () {
+  return User.find().lean();
+};
 const User = mongoose.model("user", userSchema, "users");
 
 module.exports = User;
