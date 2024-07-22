@@ -1,10 +1,8 @@
 const express = require("express");
 const User = require("../../models/usersSchema");
-const router = express.Router();
+const jwt = require("jsonwebtoken");
 
-router.get("/", (req, res) => {
-  res.json("something");
-});
+const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
   const { email, password } = req.body;
@@ -24,7 +22,25 @@ router.post("/register", async (req, res, next) => {
 });
 
 router.post("/login", async (req, res, next) => {
-  res.json("hello by login");
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(401).json({ message: "No such user" });
+  }
+  const isPasswordCorrect = await user.validatePassword(password);
+
+  if (isPasswordCorrect) {
+    const payload = {
+      id: user._id,
+      username: user.username,
+    };
+
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "12h" });
+    return res.json({ token });
+  } else {
+    return res.status(401).json({ message: "wrong password" });
+  }
 });
 
 module.exports = router;
