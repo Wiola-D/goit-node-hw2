@@ -1,28 +1,39 @@
 const mongoose = require("mongoose");
+const bCrypt = require("bcrypt");
 
-const userSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: [true, "Name is required"] },
-    phone: { type: String, required: [true, "Phone number is required"] },
-    email: { type: String },
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+const userSchema = new mongoose.Schema({
+  password: {
+    type: String,
+    required: [true, "Password is required"],
   },
-  {
-    versionKey: false,
-    timestamps: true,
-  }
-);
+  email: {
+    type: String,
+    required: [true, "Email is required"],
+    unique: true,
+  },
+  subscription: {
+    type: String,
+    enum: ["starter", "pro", "business"],
+    default: "starter",
+  },
+  token: {
+    type: String,
+    default: null,
+  },
+  // owner: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "user",
+  // },
+});
 
-userSchema.index({ name: 1 });
-
-userSchema.statics.getAll = function () {
-  return Contact.find().lean();
+userSchema.methods.setPassword = async function (password) {
+  this.password = await bCrypt.hash(password, 10);
 };
 
-userSchema.methods.htmlify = function () {
-  return `<h3>Hello</h3>`;
+userSchema.methods.validatePassword = function (password) {
+  return bCrypt.compare(password, this.password);
 };
 
-const Contact = mongoose.model("user", userSchema, "users");
+const User = mongoose.model("user", userSchema, "users");
 
-module.exports = Contact;
+module.exports = User;
