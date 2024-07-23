@@ -20,6 +20,7 @@ router.post("/signup", async (req, res, next) => {
   try {
     const newUser = new User({ email });
     await newUser.setPassword(password);
+
     await newUser.save();
     return res.status(201).json({
       message: "Create a account",
@@ -62,31 +63,22 @@ router.post("/login", async (req, res, next) => {
 });
 
 // Endpoint do wylogowania
-router.get("/logout", authMiddleware, async (req, res) => {
+router.get("/logout", authMiddleware, async (req, res, next) => {
   try {
     const userId = req.user._id; // id zalogowanego użytkownika
-
-    // Znajdź użytkownika
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
 
-    // Usuń token z obiektu użytkownika
-    console.log(user);
     user.token = null;
     await user.save();
 
     return res.status(204).send();
-  } catch (error) {
-    return res.status(401).json({ message: "Not authorized" });
+  } catch (e) {
+    next(e);
   }
 });
 
 //Endpoint do pobrania danych aktualnego użytkownika
 router.get("/current", authMiddleware, async (req, res) => {
-  const user = await User.findById(req.user._id);
-  console.log(`current:${user}`);
   return res.status(200).json({
     user: {
       email: req.user.email,
