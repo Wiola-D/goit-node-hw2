@@ -8,8 +8,8 @@ const fetchContact = (id) => {
   return Contact.findById({ _id: id });
 };
 
-const insertContact = ({ name, email, phone, favorite }) => {
-  return Contact.create({ name, email, phone, favorite });
+const insertContact = ({ name, email, phone, favorite }, owner) => {
+  return Contact.create({ name, email, phone, favorite, owner });
 };
 
 const updateContact = ({ id, toUpdate, upsert = false }) => {

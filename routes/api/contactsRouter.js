@@ -12,12 +12,17 @@ const {
   deleteContact,
 } = require("../../controllers/contactController");
 
+const authMiddleware = require("../../middelware/auth");
+const checkContactOwnership = require("../../middelware/owner");
+
+router.use(authMiddleware);
+
 router.get("/", getAllContacts);
-router.get("/:id", getContact);
+router.get("/:id", checkContactOwnership, getContact);
 router.post("/", createContact);
-router.put("/:id", putContact);
-router.patch("/:id", patchContact);
-router.patch("/:id/favorite", updateFavorite);
-router.delete("/:id", deleteContact);
+router.put("/:id", checkContactOwnership, putContact);
+router.patch("/:id", checkContactOwnership, patchContact);
+router.patch("/:id/favorite", checkContactOwnership, updateFavorite);
+router.delete("/:id", checkContactOwnership, deleteContact);
 
 module.exports = router;
