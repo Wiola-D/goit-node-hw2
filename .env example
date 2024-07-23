@@ -1,0 +1,3 @@
+DB_HOST=mongodb+srv://username:password@cluster0.rmqjotm.mongodb.net/db_name
+
+SECRET="xxxxx"
