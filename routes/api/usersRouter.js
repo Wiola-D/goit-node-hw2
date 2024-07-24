@@ -7,12 +7,8 @@ const gravatar = require("gravatar");
 const router = express.Router();
 const fs = require("fs").promises;
 const path = require("path");
-const jimp = require("jimp");
-const multer = require("multer");
-
-const upload = multer({
-  dest: "tmp/", // Ustaw folder tymczasowy
-});
+const upload = require("../../middelware/upload");
+const { isImageAndTransform } = require("../../helpers");
 
 // Endpoint do uzyskiwania wszystkich użytkowników
 router.get("/", getAllUsers);
@@ -104,37 +100,35 @@ router.patch(
   authMiddleware,
   upload.single("avatar"),
   async (req, res, next) => {
-    const userId = req.user._id;
-
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded." });
+      return res.status(400).json({ message: "No avatar uploaded." });
     }
 
+    const userId = req.user._id;
+    const { path: temporaryPath } = req.file;
+    const avatarName = `${userId}_${req.file.originalname.replace(/\s+/g, "")}`; // Unikalna nazwa pliku
+    const avatarPath = path.join(
+      __dirname,
+      "../..",
+      "public",
+      "avatars",
+      avatarName
+    );
+
     try {
-      // Przetwarzanie obrazu
-      const image = await jimp.read(req.file.path);
-      await image.resize(250, 250); // Zmień rozmiar do 250x250px
-      const avatarName = `${userId}_${Date.now()}${path.extname(
-        req.file.originalname
-      )}`; // Unikalna nazwa pliku
-      const avatarPath = path.join(
-        __dirname,
-        "../..",
-        "public",
-        "avatars",
-        avatarName
-      );
-
-      await image.write(avatarPath); // Zapisz przetworzony obraz
-
-      // Zaktualizuj URL awatara w bazie danych
+      await fs.rename(temporaryPath, avatarPath);
       const avatarURL = `/avatars/${avatarName}`;
-      await User.findByIdAndUpdate(userId, { avatarURL });
+      const isValidAndTransform = await isImageAndTransform(avatarPath);
+      if (!isValidAndTransform) {
+        await fs.unlink(avatarPath);
+        return res.status(400).json({ message: "File isnt a photo" });
+      }
 
+      await User.findByIdAndUpdate(userId, { avatarURL });
       return res.status(200).json({ avatarURL });
     } catch (error) {
-      await fs.unlink(req.file.path); // Usuń przesłany plik w przypadku błędu
-      next(error);
+      await fs.unlink(temporaryPath); // Usuń przesłany plik w przypadku błędu
+      return next(error);
     }
   }
 );
