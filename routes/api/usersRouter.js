@@ -1,14 +1,16 @@
 const express = require("express");
-const User = require("../../models/usersSchema");
 const jwt = require("jsonwebtoken");
-const authMiddleware = require("../../middelware/auth");
-const getAllUsers = require("../../controllers/userController");
 const gravatar = require("gravatar");
-const router = express.Router();
 const fs = require("fs").promises;
 const path = require("path");
+
+const User = require("../../models/usersSchema");
+const authMiddleware = require("../../middelware/auth");
+const getAllUsers = require("../../controllers/userController");
 const upload = require("../../middelware/upload");
-const { isImageAndTransform } = require("../../helpers");
+const { isImageAndTransform } = require("../../servises/imagesServices");
+
+const router = express.Router();
 
 // Endpoint do uzyskiwania wszystkich użytkowników
 router.get("/", getAllUsers);
