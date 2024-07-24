@@ -1,13 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
 const apiRouter = require("./routes/api/indexApi");
-
-require("dotenv").config();
-
-const { DB_HOST: urlDb } = process.env;
-
-const connection = mongoose.connect(urlDb);
+const path = require("path");
 
 const app = express();
 
@@ -15,6 +9,8 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api", apiRouter);
+
+app.use(express.static(path.resolve(__dirname, "./public")));
 
 app.use((req, res) => {
   res.status(404).json({ message: `Not found - ${req.path}` });
@@ -28,17 +24,4 @@ app.use((err, req, res, next) => {
   }
 });
 
-const startServer = async () => {
-  try {
-    await connection;
-    console.log("Database connected");
-    app.listen(3000, () => {
-      console.log("Server started on http://localhost:3000");
-    });
-  } catch (err) {
-    console.log(err);
-    process.exit(1);
-  }
-};
-
-startServer();
+module.exports = app;
