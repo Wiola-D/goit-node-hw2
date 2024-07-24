@@ -29,8 +29,8 @@ const contactSchema = new mongoose.Schema(
 
 contactSchema.index({ name: 1 });
 
-contactSchema.statics.getAll = function () {
-  return Contact.find().lean();
+contactSchema.statics.getAll = function (ownerid) {
+  return Contact.find({ owner: ownerid }).lean();
 };
 
 contactSchema.methods.htmlify = function () {

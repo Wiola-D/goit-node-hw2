@@ -1,7 +1,7 @@
 const Contact = require("../models/contactsSchema");
 
-const fetchContacts = () => {
-  return Contact.getAll();
+const fetchContacts = (ownerid) => {
+  return Contact.getAll(ownerid);
 };
 
 const fetchContact = (id) => {

@@ -44,8 +44,8 @@ router.post("/login", async (req, res, next) => {
 
   if (isPasswordCorrect) {
     const payload = {
-      id: user._id,
-      username: user.username,
+      owner: user._id,
+      name: user.name,
     };
 
     const token = jwt.sign(payload, process.env.SECRET, { expiresIn: "12h" });
