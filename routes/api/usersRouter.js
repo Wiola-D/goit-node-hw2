@@ -1,8 +1,13 @@
 const express = require("express");
-const User = require("../../models/usersSchema");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+const fs = require("fs").promises;
+const path = require("path");
+const User = require("../../models/usersSchema");
 const authMiddleware = require("../../middelware/auth");
 const getAllUsers = require("../../controllers/userController");
+const upload = require("../../middelware/upload");
+const { isImageAndTransform } = require("../../servises/imagesServices");
 
 const router = express.Router();
 
@@ -20,12 +25,15 @@ router.post("/signup", async (req, res, next) => {
   try {
     const newUser = new User({ email });
     await newUser.setPassword(password);
-
+    newUser.avatarURL = gravatar.url(email, { protocol: "https", s: "100" });
+    console.log(email);
+    await newUser.save();
     await newUser.save();
     return res.status(201).json({
       message: "Create a account",
       email: newUser.email,
       subscription: newUser.subscription,
+      avatar: newUser.avatarURL,
     });
   } catch (e) {
     next(e);
@@ -44,7 +52,7 @@ router.post("/login", async (req, res, next) => {
 
   if (isPasswordCorrect) {
     const payload = {
-      owner: user._id,
+      id: user._id,
       name: user.name,
     };
 
@@ -86,5 +94,44 @@ router.get("/current", authMiddleware, async (req, res) => {
     },
   });
 });
+
+// Endpoint do aktualizacji awatara
+router.patch(
+  "/avatars",
+  authMiddleware,
+  upload.single("avatar"),
+  async (req, res, next) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No avatar uploaded." });
+    }
+
+    const userId = req.user._id;
+    const { path: temporaryPath } = req.file;
+    const avatarName = `${userId}_${req.file.originalname.replace(/\s+/g, "")}`; // Unikalna nazwa pliku
+    const avatarPath = path.join(
+      __dirname,
+      "../..",
+      "public",
+      "avatars",
+      avatarName
+    );
+
+    try {
+      await fs.rename(temporaryPath, avatarPath);
+      const avatarURL = `/avatars/${avatarName}`;
+      const isValidAndTransform = await isImageAndTransform(avatarPath);
+      if (!isValidAndTransform) {
+        await fs.unlink(avatarPath);
+        return res.status(400).json({ message: "File isnt a photo" });
+      }
+
+      await User.findByIdAndUpdate(userId, { avatarURL });
+      return res.status(200).json({ avatarURL });
+    } catch (error) {
+      await fs.unlink(temporaryPath); // Usuń przesłany plik w przypadku błędu
+      return next(error);
+    }
+  }
+);
 
 module.exports = router;
