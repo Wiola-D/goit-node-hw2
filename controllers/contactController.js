@@ -9,7 +9,6 @@ const {
 
 const getAllContacts = async (req, res, next) => {
   try {
-    console.log(req.user);
     const ownerid = req.user._id;
     const contacts = await fetchContacts(ownerid);
     res.status(200).json({ contacts });
