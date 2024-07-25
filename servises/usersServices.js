@@ -4,4 +4,12 @@ const fetchUsers = () => {
   return User.getAll();
 };
 
-module.exports = fetchUsers;
+const fetchUser = (email) => {
+  return User.findOne({ email });
+};
+
+const fetchUserbyId = (userId) => {
+  return User.findById({ _id: userId });
+};
+
+module.exports = { fetchUsers, fetchUser, fetchUserbyId };
