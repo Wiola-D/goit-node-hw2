@@ -5,11 +5,13 @@ const {
   updateContact,
   removeContact,
   updateStatusContact,
-} = require("./services");
+} = require("../servises/contactServices");
 
 const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await fetchContacts();
+    console.log(req.user);
+    const ownerid = req.user._id;
+    const contacts = await fetchContacts(ownerid);
     res.status(200).json({ contacts });
   } catch (error) {
     next(error);
@@ -33,10 +35,13 @@ const getContact = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
-  const { name, email, phone, favorite } = req.body;
   try {
-    const result = await insertContact({ name, email, phone, favorite });
-    res.status(201).json(result);
+    const contact = await insertContact(req.body, req.user._id);
+    if (!contact) {
+      res.status(404).json({ message: "Contact not added" });
+    } else {
+      res.status(201).json(contact);
+    }
   } catch (error) {
     next(error);
   }
@@ -88,7 +93,7 @@ const deleteContact = async (req, res, next) => {
   const { id } = req.params;
   try {
     await removeContact(id);
-    res.status(200).send("Task deleted");
+    res.status(200).send("Contact deleted");
   } catch (error) {
     next(error);
   }
