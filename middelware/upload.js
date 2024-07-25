@@ -3,13 +3,21 @@ const path = require("path");
 const fs = require("fs");
 
 const tmpDir = path.join(__dirname, "../tmp");
+const publicDir = path.join(__dirname, "../public");
+const avatarsDir = path.join(__dirname, "../public", "avatars");
 
 try {
   if (!fs.existsSync(tmpDir)) {
     fs.mkdirSync(tmpDir);
   }
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir);
+  }
+  if (!fs.existsSync(avatarsDir)) {
+    fs.mkdirSync(avatarsDir);
+  }
 } catch (err) {
-  console.error("Error by create folder tmp:", err);
+  console.error("Error by create folders:", err);
 }
 
 const storage = multer.diskStorage({
