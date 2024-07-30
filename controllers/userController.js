@@ -42,6 +42,8 @@ const registerUser = async (req, res, next) => {
         email: newUser.email,
         subscription: newUser.subscription,
         avatar: newUser.avatarURL,
+        verificationToken: newUser.verificationToken,
+        verify: newUser.verify,
       });
     } catch (err) {
       console.error(err);
@@ -75,6 +77,8 @@ const loginUser = async (req, res, next) => {
       token,
       email: user.email,
       subscription: user.subscription,
+      verificationToken: user.verificationToken,
+      verify: user.verify,
     });
   } else {
     return res.status(401).json({ message: "Wrong password" });
