@@ -1,12 +1,14 @@
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
 const User = require("../models/usersSchema");
+const { v4: uuidv4 } = require("uuid");
 
 const {
   fetchUsers,
   fetchUser,
   fetchUserbyId,
 } = require("../servises/usersServices");
+const { sendVerificationEmail } = require("./email");
 
 const getAllUsers = async (req, res, next) => {
   try {
@@ -21,22 +23,30 @@ const registerUser = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await fetchUser(email).lean();
 
-  if (user) {
-    return res.status(409).json({ message: "This email is already taken." });
-  }
   try {
-    const newUser = new User({ email });
+    if (user) {
+      return res.status(409).json({ message: "This email is already taken." });
+    }
+    const verificationToken = uuidv4();
+
+    const newUser = new User({ email, verificationToken });
     await newUser.setPassword(password);
     newUser.avatarURL = gravatar.url(email, { protocol: "https", s: "100" });
-    console.log(email);
+
     await newUser.save();
-    await newUser.save();
-    return res.status(201).json({
-      message: "Create a account",
-      email: newUser.email,
-      subscription: newUser.subscription,
-      avatar: newUser.avatarURL,
-    });
+
+    try {
+      await sendVerificationEmail(email, verificationToken);
+      return res.status(201).json({
+        message: "Create a account",
+        email: newUser.email,
+        subscription: newUser.subscription,
+        avatar: newUser.avatarURL,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to send verification email" });
+    }
   } catch (e) {
     next(e);
   }
