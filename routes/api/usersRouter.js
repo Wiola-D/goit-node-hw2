@@ -10,8 +10,13 @@ const {
   logoutUser,
   currentUser,
 } = require("../../controllers/userController");
+
 const upload = require("../../middelware/upload");
 const { isImageAndTransform } = require("../../servises/imagesServices");
+
+const { verifyUser } = require("../../controllers/verification");
+
+const checkVerification = require("../../middelware/verification");
 
 const router = express.Router();
 
@@ -22,7 +27,7 @@ router.get("/", getAllUsers);
 router.post("/signup", registerUser);
 
 // Endpoint do logowania użytkownika
-router.post("/login", loginUser);
+router.post("/login", checkVerification, loginUser);
 
 // Endpoint do wylogowania
 router.get("/logout", authMiddleware, logoutUser);
@@ -68,5 +73,7 @@ router.patch(
     }
   }
 );
+
+router.get("/verify/:verificationToken");
 
 module.exports = router;
