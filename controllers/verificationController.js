@@ -16,12 +16,11 @@ const verifyUser = async (req, res, next) => {
 
     try {
       await user.save();
+      res.status(200).send({ message: "Verification successful" });
     } catch (saveError) {
       console.error("Error saving user:", saveError);
-      return res.status(500).send({ message: "Error updating user" });
+      throw saveError;
     }
-
-    res.status(200).send({ message: "Verification successful" });
   } catch (error) {
     next(error);
   }
