@@ -14,7 +14,10 @@ const {
 const upload = require("../../middelware/upload");
 const { isImageAndTransform } = require("../../servises/imagesServices");
 
-const { verifyUser } = require("../../controllers/verification");
+const {
+  verifyUser,
+  resendVerificationEmail,
+} = require("../../controllers/verificationController");
 
 const checkVerification = require("../../middelware/verification");
 const { sendVerificationEmail } = require("../../controllers/email");
@@ -75,57 +78,8 @@ router.patch(
   }
 );
 
-router.get("/verify/:verificationToken", async (req, res, next) => {
-  try {
-    const { verificationToken } = req.params;
+router.get("/verify/:verificationToken", verifyUser);
 
-    const user = await User.findOne({ verificationToken });
-
-    if (!user) {
-      return res.status(404).send({ message: "Not found" });
-    }
-
-    user.verify = true;
-    user.verificationToken = null;
-
-    try {
-      await user.save();
-    } catch (saveError) {
-      console.error("Error saving user:", saveError);
-      return res.status(500).send({ message: "Error updating user" });
-    }
-
-    res.status(200).send({ message: "Verification successful" });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post("/verify", async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ message: "missing required field email" });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.verify) {
-      return res
-        .status(400)
-        .json({ message: "Verification has already been passed" });
-    }
-
-    await sendVerificationEmail(user.email, user.verificationToken);
-    res.status(200).json({ message: "Verification email sent" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-});
+router.post("/verify", resendVerificationEmail);
 
 module.exports = router;
