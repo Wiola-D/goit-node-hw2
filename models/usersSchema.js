@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, "Email is required"],
-    unique: true,
+    unique: false,
   },
   subscription: {
     type: String,
@@ -17,6 +17,17 @@ const userSchema = new mongoose.Schema({
     default: "starter",
   },
   token: {
+    type: String,
+    default: null,
+  },
+  avatarURL: {
+    type: String,
+  },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
     type: String,
     default: null,
   },
