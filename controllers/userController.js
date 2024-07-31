@@ -36,10 +36,9 @@ const registerUser = async (req, res, next) => {
     await newUser.setPassword(password);
     newUser.avatarURL = gravatar.url(email, { protocol: "https", s: "100" });
 
-    await newUser.save();
-
     try {
       await sendVerificationEmail(email, verificationToken);
+      await newUser.save();
       return res.status(201).json({
         message: "Create a account",
         email: newUser.email,
@@ -51,6 +50,7 @@ const registerUser = async (req, res, next) => {
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Failed to send verification email" });
+      return err;
     }
   } catch (e) {
     next(e);
